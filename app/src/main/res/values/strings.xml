@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">MovieBootcamp</string>
     <string name="vote">%s / 10.0</string>
+    <string name="something_wrong">Something went wrong.</string>
+    <string name="no_data">No data found!</string>
+    <string name="reload">RELOAD</string>
+    <string name="retry">RETRY</string>
 </resources>

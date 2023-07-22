@@ -44,10 +44,15 @@ class MainActivity : BaseActivity() {
                         movieAdapter.submitData(movie.data)
 
                         //handle empty data
+                        binding.viewEmpty.root.visibility = if (movie.data?.isNotEmpty() == true) View.GONE else View.VISIBLE
                     }
                     is Resource.Error -> {
                         hideLoading()
                         //handle error
+                        binding.viewError.apply {
+                            root.visibility = View.VISIBLE
+                            tvError.text = movie.message ?: getString(R.string.something_wrong)
+                        }
 
                         this@MainActivity.shortToast(movie.message.toString())
                     }
