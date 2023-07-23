@@ -1,18 +1,18 @@
 package com.singaludra.moviebootcamp.presentation
 
-import android.os.Binder
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
-import androidx.core.content.ContentProviderCompat.requireContext
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.singaludra.moviebootcamp.R
 import com.singaludra.moviebootcamp.data.source.Resource
 import com.singaludra.moviebootcamp.databinding.ActivityMainBinding
 import com.singaludra.moviebootcamp.domain.model.Movie
 import com.singaludra.moviebootcamp.presentation.adapter.MovieAdapter
 import com.singaludra.moviebootcamp.presentation.base.BaseActivity
+import com.singaludra.moviebootcamp.utils.networkconnectivity.ConnectionState
 import com.singaludra.moviebootcamp.utils.shortToast
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -44,7 +44,12 @@ class MainActivity : BaseActivity() {
                         movieAdapter.submitData(movie.data)
 
                         //handle empty data
-                        binding.viewEmpty.root.visibility = if (movie.data?.isNotEmpty() == true) View.GONE else View.VISIBLE
+                        binding.viewEmpty.apply {
+                            root.visibility = if (movie.data?.isNotEmpty() == true) View.GONE else View.VISIBLE
+                            btnRetry.setOnClickListener {
+                                this@MainActivity.recreate()
+                            }
+                        }
                     }
                     is Resource.Error -> {
                         hideLoading()
@@ -52,9 +57,23 @@ class MainActivity : BaseActivity() {
                         binding.viewError.apply {
                             root.visibility = View.VISIBLE
                             tvError.text = movie.message ?: getString(R.string.something_wrong)
+                            btnRetry.setOnClickListener {
+                                this@MainActivity.recreate()
+                            }
                         }
 
                         this@MainActivity.shortToast(movie.message.toString())
+                    }
+                }
+            }
+            this@MainActivity.lifecycleScope.launchWhenStarted {
+                connectionState.collect{ state ->
+                    if(state == ConnectionState.Unavailable) {
+                        Snackbar.make(binding.root, "No internet connection!", Snackbar.LENGTH_LONG)
+                            .setAction("RELOAD") {
+                                this@MainActivity.recreate()
+                            }
+                            .show()
                     }
                 }
             }
