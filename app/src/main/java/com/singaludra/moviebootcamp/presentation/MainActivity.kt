@@ -84,7 +84,6 @@ class MainActivity : BaseActivity() {
         binding.apply {
             movieAdapter = MovieAdapter(object : MovieAdapter.OnClickListener{
                 override fun onClickItem(item: Movie) {
-                    TODO("Not yet implemented")
                 }
             })
 
@@ -92,6 +91,11 @@ class MainActivity : BaseActivity() {
                 layoutManager = LinearLayoutManager(this@MainActivity)
                 setHasFixedSize(true)
                 adapter = movieAdapter
+            }
+
+            swipeRefresh.setOnRefreshListener {
+                viewModel.getAllMovie()
+                swipeRefresh.isRefreshing = false
             }
         }
     }
