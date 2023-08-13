@@ -1,23 +1,18 @@
-package com.singaludra.moviebootcamp.di
+package com.singaludra.moviebootcamp.factories
 
-import com.singaludra.moviebootcamp.data.source.remote.network.ApiService
 import com.singaludra.moviebootcamp.data.source.remote.network.RequestInterceptor
 import com.singaludra.moviebootcamp.utils.Constants
-import dagger.Module
-import dagger.Provides
-import dagger.hilt.InstallIn
-import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
-import javax.inject.Singleton
 
-@Module
-@InstallIn(SingletonComponent::class)
-class NetworkModule {
-    @Provides
+object NetworkFactory{
+    fun providesRequestInterceptor(): RequestInterceptor {
+        return RequestInterceptor()
+    }
+
     fun provideOkHttpClient(
         requestInterceptor: RequestInterceptor
     ): OkHttpClient {
@@ -29,18 +24,13 @@ class NetworkModule {
             .build()
     }
 
-    @Provides
-    fun provideApiService(client: OkHttpClient): ApiService {
+    fun provideApiService(client: OkHttpClient): Retrofit {
         val retrofit = Retrofit.Builder()
             .baseUrl(Constants.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
-        return retrofit.create(ApiService::class.java)
+        return retrofit
     }
-    @Provides
-    @Singleton
-    fun providesRequestInterceptor(): RequestInterceptor {
-        return RequestInterceptor()
-    }
+
 }

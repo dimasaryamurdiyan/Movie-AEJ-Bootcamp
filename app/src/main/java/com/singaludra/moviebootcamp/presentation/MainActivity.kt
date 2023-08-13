@@ -3,6 +3,7 @@ package com.singaludra.moviebootcamp.presentation
 import android.os.Bundle
 import android.view.View
 import androidx.activity.viewModels
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
@@ -16,18 +17,19 @@ import com.singaludra.moviebootcamp.utils.networkconnectivity.ConnectionState
 import com.singaludra.moviebootcamp.utils.shortToast
 import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class MainActivity : BaseActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var movieAdapter: MovieAdapter
 
-    private val viewModel by viewModels<MainViewModel>()
+    private lateinit var viewModel: MainViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        viewModel = ViewModelProvider(this, MainViewModel.FACTORY)[MainViewModel::class.java]
+        viewModel.getAllMovie()
         onViewBind()
         onViewObserve()
     }

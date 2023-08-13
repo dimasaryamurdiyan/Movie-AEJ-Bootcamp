@@ -1,9 +1,14 @@
 package com.singaludra.moviebootcamp.data.source.remote
 
 import android.util.Log
+import com.singaludra.moviebootcamp.data.source.Resource
 import com.singaludra.moviebootcamp.data.source.remote.network.ApiResponse
 import com.singaludra.moviebootcamp.data.source.remote.network.ApiService
 import com.singaludra.moviebootcamp.data.source.remote.response.GetListMovieResponse
+import com.singaludra.moviebootcamp.domain.IRemoteDataSource
+import com.singaludra.moviebootcamp.domain.MovieLoader
+import com.singaludra.moviebootcamp.domain.model.Movie
+import com.singaludra.moviebootcamp.utils.DataMapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -15,19 +20,13 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class RemoteDataSource @Inject constructor(private val apiService: ApiService) {
+class RemoteDataSource @Inject constructor(private val apiService: ApiService): IRemoteDataSource {
 
-    suspend fun getListMovie(
-        language: String? = null,
-        page: Int? = null,
-        region: String? = null,
-    ): Flow<ApiResponse<GetListMovieResponse>> {
+    override fun getAllMovie(): Flow<ApiResponse<GetListMovieResponse>> {
         //get data from remote api
         return flow {
             try {
-                val response = apiService.getListMovie(
-                    language, page, region
-                )
+                val response = apiService.getListMovie()
                 if (response.results != null) {
                     emit(ApiResponse.Success(response))
                 } else {

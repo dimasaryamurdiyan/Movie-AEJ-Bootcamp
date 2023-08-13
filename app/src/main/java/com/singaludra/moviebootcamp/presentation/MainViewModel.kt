@@ -1,29 +1,28 @@
 package com.singaludra.moviebootcamp.presentation
 
-import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.singaludra.moviebootcamp.data.source.Resource
+import com.singaludra.moviebootcamp.factories.createLoadMovieLocalUseCaseFactory
+import com.singaludra.moviebootcamp.factories.createLoadMovieRemoteUseCaseFactory
+import com.singaludra.moviebootcamp.factories.createMovieLoaderWithFallbackCompositeFactory
+import com.singaludra.moviebootcamp.domain.MovieLoader
 import com.singaludra.moviebootcamp.domain.model.Movie
-import com.singaludra.moviebootcamp.domain.usecase.MovieUseCase
 import com.singaludra.moviebootcamp.utils.networkconnectivity.ConnectionState
-import com.singaludra.moviebootcamp.utils.networkconnectivity.observeConnectivityAsFlow
 import dagger.hilt.android.lifecycle.HiltViewModel
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-@HiltViewModel
-class MainViewModel @Inject constructor(
-    val movieUseCase: MovieUseCase,
-    @ApplicationContext private val appContext: Context
+class MainViewModel constructor(
+    private val movieLoader: MovieLoader,
 ): ViewModel(){
     private val _movieList = MutableLiveData<Resource<List<Movie>>>()
     val movieList: LiveData<Resource<List<Movie>>> get() = _movieList
@@ -34,25 +33,28 @@ class MainViewModel @Inject constructor(
 
     init {
         getAllMovie()
-        observeConnectivity()
     }
-
     fun getAllMovie(){
         viewModelScope.launch {
-            movieUseCase.getAllMovie().collect{
+            movieLoader.load().collect{
+                Log.d("ViewModel", "getAllMovie2")
+                Log.d("ViewModel", it.toString())
                 _movieList.postValue(it)
             }
         }
     }
 
-    // Create a flow to observe connectivity state changes
-    fun observeConnectivity() {
-        viewModelScope.launch {
-            appContext.observeConnectivityAsFlow()
-                .onCompletion { _connectionState.value = null }
-                .catch { _connectionState.value = ConnectionState.Unavailable }
-                .collect { state -> _connectionState.value = state }
+
+    companion object {
+        val FACTORY: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                MainViewModel(
+                    createMovieLoaderWithFallbackCompositeFactory(
+                        primary = createLoadMovieRemoteUseCaseFactory(),
+                        fallback = createLoadMovieLocalUseCaseFactory()
+                    )
+                )
+            }
         }
     }
-
 }

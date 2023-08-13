@@ -1,9 +1,9 @@
-package com.singaludra.moviebootcamp.domain.usecase
+package com.singaludra.moviebootcamp.domain
 
 import com.singaludra.moviebootcamp.data.source.Resource
 import com.singaludra.moviebootcamp.domain.model.Movie
 import kotlinx.coroutines.flow.Flow
 
-interface MovieUseCase {
-    fun getAllMovie(): Flow<Resource<List<Movie>>>
+interface MovieLoader {
+    fun load(): Flow<Resource<List<Movie>>>
 }
